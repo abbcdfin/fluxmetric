@@ -8,7 +8,7 @@ The specification of this project is in ./README.md.
 
 ## Plan
 Please use ./plan.md as the interactive design board. This can be used as a highlevel plan for later work. Each phase of the plan should be verifiable so can be properly completed.
-- Just-In-Time (JIT) Planning: For each phase, please concisely list the granular just-in-time plan before proceeding. Do not detail future phases until the current one is done. However, as each vibe coding framework has there own internal planning mechanism, the JIT plan don't need to be included in the plan.md.
+- Just-In-Time (JIT) Planning: For each phase, please concisely list the granular just-in-time plan before proceeding. Do not detail future phases until the current one is done. Please use phase*_plan.md or your own internal planning mechanism, the JIT plan should not be included in the plan.md.
 - Summarize and Collapse: Once the phase finished, please update plan.md with a concise summary which might help the future phase. No granular tactical information needs to be kept for the completed phases.
 
 ## Checkpoint
