@@ -17,8 +17,14 @@ FluxMetric is a high-precision lighting simulation tool that requires robust wor
 ### Phase 4: Calculation Engine Integration & 3D Visual Analysis [COMPLETED]
 - **Summary**: Integrated the core engine with the UI to perform illuminance calculations within the defined workspace boundaries. Implemented `CalculationViewModel` using background isolates for non-blocking, multi-fixture calculations. Developed a dynamic 3D heatmap rendering system that maps lux values to a color-coded mesh overlaid on the work plane. Added UI for real-time compliance metrics (Average Lux and Uniformity). Verified via successful multi-fixture simulation and calculation runs.
 
+### Phase 5: IES Library Management [COMPLETED]
+- **Summary**: Developed a comprehensive library management system. Replaced the single-file viewer with a multi-file library supporting import, selection, and removal of multiple IES files. Integrated the library with the workspace, ensuring fixtures and grid arrays use the active library selection. Refined the professional 3-column layout to accommodate the library list and metadata display. Verified via successful multi-file library testing.
+
+### Phase 6: Persistence & Metadata Customization [COMPLETED]
+- **Summary**: Implemented full library persistence. Developed `IesPersistenceService` using `path_provider` to save and load the IES collection as a JSON file in the application's documents directory. Enhanced the library model to support custom `displayName` and stored `rawContent` for session restoration. Added a renaming UI, allowing users to customize fixture titles for better organization. Verified via successful build and persistence testing.
+
 ## Project Complete
-FluxMetric is now a high-precision 3D lighting evaluation tool supporting robust workspace definition, technical fixture placement, and interactive visual analysis.
+FluxMetric is now a robust, high-precision lighting simulation tool with advanced 3D visualization, technical placement, comprehensive library management, and cross-session persistence.
 
 ## Work Flow (Vibe Coding)
 - We will use `./plan.md` in the workspace as the interactive design board.

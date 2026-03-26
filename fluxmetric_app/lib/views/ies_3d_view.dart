@@ -44,16 +44,16 @@ class _Ies3DViewState extends State<Ies3DView> {
                   children: [
                     const Icon(Icons.library_books, color: Colors.grey),
                     const SizedBox(width: 8),
-                    Text('IES Library', style: Theme.of(context).textTheme.titleMedium),
+                    Text(vm.selectedEntry?.displayName ?? 'IES Library', style: Theme.of(context).textTheme.titleMedium),
                     const Spacer(),
-                    if (vm.iesData != null) ...[
+                    if (vm.selectedEntry != null) ...[
                       ElevatedButton.icon(
                         onPressed: () {
                           simVm.addFixture(LightFixture(
                             id: 'f_${DateTime.now().millisecondsSinceEpoch}',
                             position: const math.Point(0, 0),
                             height: 5.0,
-                            web: PhotometricWeb(vm.iesData!),
+                            web: PhotometricWeb(vm.selectedEntry!.data),
                           ));
                           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Added fixture to Workspace')));
                         },
@@ -66,7 +66,7 @@ class _Ies3DViewState extends State<Ies3DView> {
                     IconButton(
                       icon: const Icon(Icons.file_open),
                       onPressed: () => vm.pickIesFile(),
-                      tooltip: 'Open IES File',
+                      tooltip: 'Import IES Files',
                     ),
                   ],
                 ),
@@ -82,7 +82,7 @@ class _Ies3DViewState extends State<Ies3DView> {
                       : vm.webLines.isEmpty
                           ? const Center(
                               child: Text(
-                                'Load an IES file to see the 3D web',
+                                'Import IES files to populate your library',
                                 style: TextStyle(color: Colors.white70),
                               ),
                             )
@@ -105,9 +105,9 @@ class _Ies3DViewState extends State<Ies3DView> {
           ),
         ),
         
-        // Column 3: Operation Panel (Metadata)
+        // Column 3: Library & Metadata
         Container(
-          width: 300,
+          width: 350,
           decoration: BoxDecoration(
             color: Colors.grey[50],
             border: const Border(left: BorderSide(color: Colors.grey, width: 0.5)),
@@ -121,17 +121,59 @@ class _Ies3DViewState extends State<Ies3DView> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('IES Metadata', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
-                    const Text('Technical specifications', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                    Text('Manage Library', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+                    Text('${vm.library.length} files imported', style: const TextStyle(fontSize: 12, color: Colors.grey)),
                   ],
                 ),
               ),
               const Divider(height: 1),
               
+              // Library List
+              SizedBox(
+                height: 250,
+                child: ListView.builder(
+                  itemCount: vm.library.length,
+                  itemBuilder: (context, index) {
+                    final entry = vm.library[index];
+                    final isSelected = vm.selectedIndex == index;
+                    return ListTile(
+                      dense: true,
+                      selected: isSelected,
+                      selectedTileColor: Colors.blue[50],
+                      leading: const Icon(Icons.lightbulb_outline),
+                      title: Text(entry.displayName, style: const TextStyle(fontSize: 12, overflow: TextOverflow.ellipsis)),
+                      subtitle: Text(entry.fileName, style: const TextStyle(fontSize: 9, color: Colors.grey)),
+                      onTap: () => vm.selectEntry(index),
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.edit_note, size: 18),
+                            onPressed: () => _editNameDialog(context, vm, index, entry.displayName),
+                            tooltip: 'Rename',
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.delete_outline, size: 18),
+                            onPressed: () => vm.removeEntry(index),
+                            tooltip: 'Remove',
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ),
+              
+              const Divider(height: 1),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                child: Text('Selected Metadata', style: Theme.of(context).textTheme.titleSmall),
+              ),
+
               if (vm.iesData != null)
                 Expanded(
                   child: SingleChildScrollView(
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -146,7 +188,7 @@ class _Ies3DViewState extends State<Ies3DView> {
                           ),
                         )),
                         const SizedBox(height: 16),
-                        Text('Technical Data', style: Theme.of(context).textTheme.titleSmall),
+                        Text('Technical Data', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
                         const Divider(),
                         _techRow('Lamps', vm.iesData!.numberOfLamps.toString()),
                         _techRow('Lumens/Lamp', vm.iesData!.lumensPerLamp.toString()),
@@ -154,6 +196,7 @@ class _Ies3DViewState extends State<Ies3DView> {
                         _techRow('Vertical Angles', vm.iesData!.numberOfVerticalAngles.toString()),
                         _techRow('Horizontal Angles', vm.iesData!.numberOfHorizontalAngles.toString()),
                         _techRow('Input Watts', vm.iesData!.inputWatts.toString()),
+                        const SizedBox(height: 24),
                       ],
                     ),
                   ),
@@ -161,13 +204,38 @@ class _Ies3DViewState extends State<Ies3DView> {
               else
                 const Expanded(
                   child: Center(
-                    child: Text('No data loaded', style: TextStyle(color: Colors.grey, fontSize: 12)),
+                    child: Text('Select a file to view data', style: TextStyle(color: Colors.grey, fontSize: 12)),
                   ),
                 ),
             ],
           ),
         ),
       ],
+    );
+  }
+
+  void _editNameDialog(BuildContext context, IesVisualizerViewModel vm, int index, String currentName) {
+    final controller = TextEditingController(text: currentName);
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Rename Library Entry'),
+        content: TextField(
+          controller: controller,
+          decoration: const InputDecoration(labelText: 'Display Name'),
+          autofocus: true,
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+          ElevatedButton(
+            onPressed: () {
+              vm.renameEntry(index, controller.text);
+              Navigator.pop(context);
+            },
+            child: const Text('Rename'),
+          ),
+        ],
+      ),
     );
   }
 

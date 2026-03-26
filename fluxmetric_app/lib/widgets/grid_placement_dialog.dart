@@ -98,9 +98,10 @@ class _GridPlacementDialogState extends State<GridPlacementDialog> {
         ),
         ElevatedButton(
           onPressed: () {
-            if (iesVm.iesData != null) {
+            final selectedIes = iesVm.selectedEntry?.data;
+            if (selectedIes != null) {
               simVm.createGridArray(
-                web: PhotometricWeb(iesVm.iesData!),
+                web: PhotometricWeb(selectedIes),
                 rows: int.tryParse(_rowsController.text) ?? 4,
                 cols: int.tryParse(_colsController.text) ?? 4,
                 rowSpacing: double.tryParse(_rowSpacingController.text) ?? 3.0,
