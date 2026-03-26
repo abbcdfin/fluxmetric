@@ -14,7 +14,7 @@
 
 **Refinements & Fixes:**
 - [x] **2D Technical Heatmap**: Added a dedicated tab for a crisp, top-down technical view using `CustomPainter` with auto-scaling and a color legend.
-- [x] **Scale Controls**: Implemented a toggle between **Dynamic Scale** (max based on current result) and **Fixed Scale** (user-defined max lux) for consistent reporting.
+- [x] **Scale Controls**: Implemented a toggle between **Dynamic Scale** (max based on current result) and **Fixed Scale** (user-defined max lux) for consistent technical reporting.
 - [x] **Double-Sided Rendering**: Made 3D heatmap faces visible from both top and bottom (+/- Z) to ensure clarity during 3D navigation.
-- [x] **Heatmap Positioning**: Fixed the vertical offset bug to ensure the heatmap renders exactly on the work plane.
+- [x] **Heatmap Positioning**: Fixed vertical offset bugs to ensure the heatmap renders exactly on the work plane.
 - [x] **Camera Controls**: Added a "Reset Top View" button to the 3D viewport.

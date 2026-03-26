@@ -18,6 +18,7 @@
     - [x] Adjust one fixture height individually.
 
 **Refinements & Fixes:**
-- [x] **3D Web Overlay**: Added visualization of the photometric web for the selected fixture directly in the workspace.
+- [x] **Professional 3-Column Layout**: Refactored the UI into "Global Menu", "Current View", and "Operation Panel" columns for standard CAD-like usability.
 - [x] **Technical Input Widget**: Created a custom `TechnicalInput` with persistent controllers to fix focus/cursor reset issues during number editing.
+- [x] **3D Web Overlay**: Added visualization of the photometric web for the selected fixture directly in the workspace.
 - [x] **Selection Logic**: Added "Select All" and "Clear Selection" for bulk management.
