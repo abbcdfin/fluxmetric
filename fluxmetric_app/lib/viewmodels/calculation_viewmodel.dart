@@ -27,9 +27,29 @@ class CalculationViewModel extends ChangeNotifier {
   List<Face3D> _heatmapFaces = [];
   bool _isCalculating = false;
 
+  bool _isDynamicScale = true;
+  double _fixedMaxLux = 1000.0;
+
+  // Store last calculation parameters for re-rendering
+  double _lastWidth = 0;
+  double _lastLength = 0;
+  double _lastResolution = 0;
+  double _lastWorkPlaneHeight = 0;
+
   GridResult? get result => _result;
   List<Face3D> get heatmapFaces => _heatmapFaces;
   bool get isCalculating => _isCalculating;
+  bool get isDynamicScale => _isDynamicScale;
+  double get fixedMaxLux => _fixedMaxLux;
+
+  void setScaleSettings(bool isDynamic, double fixedMax) {
+    _isDynamicScale = isDynamic;
+    _fixedMaxLux = fixedMax;
+    if (_result != null) {
+      _generateHeatmapMesh(_lastWidth, _lastLength, _lastResolution, _lastWorkPlaneHeight);
+    }
+    notifyListeners();
+  }
 
   Future<void> runCalculation({
     required List<LightFixture> fixtures,
@@ -39,11 +59,14 @@ class CalculationViewModel extends ChangeNotifier {
     required double resolution, // m per point
   }) async {
     _isCalculating = true;
+    _lastWidth = width;
+    _lastLength = length;
+    _lastResolution = resolution;
+    _lastWorkPlaneHeight = workPlaneHeight;
     notifyListeners();
 
     try {
-      // Use compute to run calculation in an isolate
-      _result = await compute(_calculateGrid, {
+      _result = _calculateGrid({
         'fixtures': fixtures,
         'workPlaneHeight': workPlaneHeight,
         'width': width,
@@ -51,7 +74,7 @@ class CalculationViewModel extends ChangeNotifier {
         'resolution': resolution,
       });
 
-      _generateHeatmapMesh(width, length, resolution);
+      _generateHeatmapMesh(width, length, resolution, workPlaneHeight);
     } catch (e) {
       debugPrint('Calculation error: $e');
     } finally {
@@ -60,7 +83,7 @@ class CalculationViewModel extends ChangeNotifier {
     }
   }
 
-  void _generateHeatmapMesh(double width, double length, double resolution) {
+  void _generateHeatmapMesh(double width, double length, double resolution, double workPlaneHeight) {
     if (_result == null) return;
     
     _heatmapFaces = [];
@@ -68,6 +91,9 @@ class CalculationViewModel extends ChangeNotifier {
     final cols = _result!.values[0].length;
     final startX = -width / 2;
     final startY = -length / 2;
+    final h = workPlaneHeight + 0.01;
+
+    final effectiveMax = _isDynamicScale ? _result!.max : _fixedMaxLux;
 
     for (int r = 0; r < rows - 1; r++) {
       for (int c = 0; c < cols - 1; c++) {
@@ -76,23 +102,23 @@ class CalculationViewModel extends ChangeNotifier {
         final v3 = _result!.values[r+1][c+1];
         final v4 = _result!.values[r+1][c];
 
-        final p1 = vector.Vector3(startX + c * resolution, startY + r * resolution, 0.01);
-        final p2 = vector.Vector3(startX + (c+1) * resolution, startY + r * resolution, 0.01);
-        final p3 = vector.Vector3(startX + (c+1) * resolution, startY + (r+1) * resolution, 0.01);
-        final p4 = vector.Vector3(startX + c * resolution, startY + (r+1) * resolution, 0.01);
+        final p1 = vector.Vector3(startX + c * resolution, startY + r * resolution, h);
+        final p2 = vector.Vector3(startX + (c+1) * resolution, startY + r * resolution, h);
+        final p3 = vector.Vector3(startX + (c+1) * resolution, startY + (r+1) * resolution, h);
+        final p4 = vector.Vector3(startX + c * resolution, startY + (r+1) * resolution, h);
 
-        // Map values to colors
-        final color = _luxToColor((v1 + v2 + v3 + v4) / 4, _result!.max);
+        final color = _luxToColor((v1 + v2 + v3 + v4) / 4, effectiveMax);
 
-        // Create two triangles for the quad using vector_math Triangle
         _heatmapFaces.add(Face3D(vector.Triangle.points(p1, p2, p3), color: color));
         _heatmapFaces.add(Face3D(vector.Triangle.points(p1, p3, p4), color: color));
+        _heatmapFaces.add(Face3D(vector.Triangle.points(p1, p3, p2), color: color));
+        _heatmapFaces.add(Face3D(vector.Triangle.points(p1, p4, p3), color: color));
       }
     }
   }
 
   Color _luxToColor(double lux, double maxLux) {
-    if (maxLux == 0) return Colors.blue;
+    if (maxLux <= 0) return Colors.blue;
     final double normalized = (lux / maxLux).clamp(0.0, 1.0);
     return HSVColor.fromAHSV(1.0, (1.0 - normalized) * 240.0, 1.0, 1.0).toColor();
   }
