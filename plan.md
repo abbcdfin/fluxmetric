@@ -21,10 +21,13 @@ FluxMetric is a high-precision lighting simulation tool that requires robust wor
 - **Summary**: Developed a comprehensive library management system. Replaced the single-file viewer with a multi-file library supporting import, selection, and removal of multiple IES files. Integrated the library with the workspace, ensuring fixtures and grid arrays use the active library selection. Refined the professional 3-column layout to accommodate the library list and metadata display. Verified via successful multi-file library testing.
 
 ### Phase 6: Persistence & Metadata Customization [COMPLETED]
-- **Summary**: Implemented full library persistence. Developed `IesPersistenceService` using `path_provider` to save and load the IES collection as a JSON file in the application's documents directory. Enhanced the library model to support custom `displayName` and stored `rawContent` for session restoration. Added a renaming UI, allowing users to customize fixture titles for better organization. Verified via successful build and persistence testing.
+- **Summary**: Implemented full library persistence using JSON and `path_provider`. Added renaming capability for library entries. Verified via cross-session testing.
+
+### Phase 7: GitHub CI/CD Pipeline [COMPLETED]
+- **Summary**: Implemented a comprehensive GitHub Actions CI/CD pipeline for automated Windows releases. Developed `.github/workflows/release.yml` using the `windows-latest` runner to handle the project's dual-directory structure and local engine dependency. The pipeline automates the build, zipping of release artifacts, and uploading to GitHub Releases upon tag creation (e.g., `v1.0.0`) or manual dispatch. Verified for path accuracy and workflow triggers.
 
 ## Project Complete
-FluxMetric is now a robust, high-precision lighting simulation tool with advanced 3D visualization, technical placement, comprehensive library management, and cross-session persistence.
+FluxMetric is now a production-ready, high-precision lighting simulation tool with advanced 3D/2D visualization, technical placement, persistent library management, and automated release pipelines.
 
 ## Work Flow (Vibe Coding)
 - We will use `./plan.md` in the workspace as the interactive design board.
